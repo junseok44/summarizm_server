@@ -46,6 +46,13 @@ export class ClaudeAgentService implements IAIAgent {
       return result;
     } catch (error) {
       this.logger.error('Claude API 호출 중 오류:', error);
+
+      if (error.status === 529) {
+        throw new Error(
+          '클로드 서버가 과부화 상태입니다. 잠시 후 다시 시도해주세요.',
+        );
+      }
+
       throw new Error('AI 요청 중 오류가 발생했습니다.');
     }
   }
