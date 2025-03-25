@@ -39,20 +39,4 @@ export class SummaryService {
       createdAt: new Date(),
     };
   }
-
-  findAll() {
-    return `This action returns all summary`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} summary`;
-  }
-
-  // update(id: number, updateSummaryDto: UpdateSummaryDto) {
-  //   return `This action updates a #${id} summary`;
-  // }
-
-  remove(id: number) {
-    return `This action removes a #${id} summary`;
-  }
 }
