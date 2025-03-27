@@ -1,8 +1,8 @@
 import { Controller, Post, Body, Logger } from '@nestjs/common';
 import { SummaryService } from '../summary/summary.service';
-import { ChannelType } from './types/channel-type';
 import { SlackConfig } from './interfaces/output-channel.interface';
-import { YoutubeService } from 'src/video-source/services/youtube.service';
+import { OutputChannelService } from './output-channel.service';
+import { ChannelType } from './types/channel-type';
 
 @Controller('slack')
 export class SlackController {
@@ -10,7 +10,7 @@ export class SlackController {
 
   constructor(
     private readonly summaryService: SummaryService,
-    private readonly youtubeService: YoutubeService,
+    private readonly outputChannelService: OutputChannelService,
   ) {}
 
   @Post('events')
@@ -27,33 +27,62 @@ export class SlackController {
       return { message: 'Ignored event type' };
     }
 
-    try {
-      // YouTube URL 추출
-      const youtubeUrl = this.youtubeService.extractVideoId(event.text);
-      if (!youtubeUrl) {
-        throw new Error('유효한 YouTube URL을 찾을 수 없습니다.');
-      }
+    const slackConfig: SlackConfig = {
+      threadTs: event.thread_ts || event.ts,
+      channelId: event.channel,
+    };
 
-      const slackConfig: SlackConfig = {
-        threadTs: event.thread_ts || event.ts,
-        channelId: event.channel,
-      };
+    try {
+      this.outputChannelService
+        .send({
+          type: ChannelType.SLACK,
+          config: slackConfig,
+          content: {
+            message: '요약을 준비하는 중이에요!!',
+          },
+        })
+        .catch((error) => {
+          this.logger.error('채널 전송 중 오류:', error);
+        });
 
       // 요약 생성
-      await this.summaryService.create({
-        url: youtubeUrl,
-        outputChannels: [
-          {
+      this.summaryService
+        .create({
+          url: event.text,
+          outputChannels: [
+            {
+              type: ChannelType.SLACK,
+              config: slackConfig,
+            },
+          ],
+        })
+        .catch((error) => {
+          this.logger.error('요약 생성 중 오류:', error);
+
+          const errorMessage = [
+            '😅 앗! 요약하는 중에 문제가 생겼어요.',
+            '',
+            '🚨 *에러 내용*',
+            `\`${error.message}\``,
+            '',
+            '🔄 다시 한 번 시도해주시겠어요?',
+            '혹시 계속 같은 문제가 발생한다면 관리자에게 문의해주세요!',
+          ].join('\n');
+
+          this.outputChannelService.send({
             type: ChannelType.SLACK,
             config: slackConfig,
-          },
-        ],
-      });
+            content: {
+              message: errorMessage,
+            },
+          });
+        });
 
       return { message: 'Processing started' };
     } catch (error) {
       this.logger.error('Slack 이벤트 처리 중 오류:', error);
-      throw error;
+
+      return { message: 'Processing failed' };
     }
   }
 }

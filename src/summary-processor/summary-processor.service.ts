@@ -36,8 +36,6 @@ export class SummaryProcessorService {
       // AI 에이전트에 요청
       const response = await agent.request(prompt, JSON.stringify(captions));
 
-      console.log(response);
-
       // 응답 파싱
       const data = this.parseResponse(response);
 

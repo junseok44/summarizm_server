@@ -6,6 +6,7 @@ import {
   ISendData,
 } from '../interfaces/output-channel.interface';
 import { ChannelType } from '../types/channel-type';
+import { SummaryContent } from 'src/summary/interfaces/summary-content.interface';
 
 @Injectable()
 export class SlackChannel implements IOutputChannel<ChannelType.SLACK> {
@@ -32,32 +33,61 @@ export class SlackChannel implements IOutputChannel<ChannelType.SLACK> {
   }
 
   async send(data: ISendData<ChannelType.SLACK>): Promise<void> {
+    const { threadTs, channelId } = data.config;
+
     try {
-      const { threadTs, channelId } = data.config;
       const formattedContent = this.formatSummaryForSlack(data.content);
 
       await this.slackClient.chat.postMessage({
         channel: channelId,
         thread_ts: threadTs,
         text: formattedContent,
+        parse: 'full',
       });
 
       this.logger.log(`Slack message sent to channel: ${channelId}`);
     } catch (error) {
       this.logger.error('Slack 메시지 전송 실패:', error);
+
       throw new Error('Slack 메시지 전송 실패');
     }
   }
 
   private formatSummaryForSlack(content: any): string {
-    const { title, summary } = content;
-    return [
-      `*${title}*`,
+    // 단순 텍스트인 경우
+    if (typeof content === 'string' || content?.message) {
+      return content.message || content;
+    }
+
+    const {
+      title,
+      summary: { mainTopics, totalSummary, timeline },
+    } = content as SummaryContent;
+
+    // Slack 메시지 포맷팅
+    const message = [
+      `🎉 요약이 완성되었어요!`,
       '',
-      '*요약:*',
-      summary,
+      `📺 *${title}*`,
       '',
-      `_${new Date().toLocaleString('ko-KR')}_`,
+      '🎯 *주요 토픽*',
+      mainTopics,
+      '',
+      '📝 *전체 요약*',
+      ...totalSummary.map((summary) => `• ${summary}`),
+      '',
+      '⏱ *타임라인*',
+      ...timeline
+        .map((item) => [
+          `${item.icon || '▶️'} *${item.startTime}* - ${item.title}`,
+          ...item.summary.map((point) => `   • ${point}`),
+          '', // 각 타임라인 항목 사이 빈 줄 추가
+        ])
+        .flat(),
+      '',
+      '🔍 더 자세한 내용이 궁금하시다면 타임라인의 시간을 클릭해서 해당 부분부터 시청해보세요!',
     ].join('\n');
+
+    return message;
   }
 }

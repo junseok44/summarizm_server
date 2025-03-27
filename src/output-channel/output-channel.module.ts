@@ -5,16 +5,10 @@ import { ConfigModule } from '@nestjs/config';
 import { HttpModule } from '@nestjs/axios';
 import { SlackController } from './slack.controller';
 import { SlackChannel } from './channels/slack.channel';
-import { VideoSourceModule } from 'src/video-source/video-source.module';
 import { SummaryModule } from 'src/summary/summary.module';
 
 @Module({
-  imports: [
-    ConfigModule,
-    HttpModule,
-    VideoSourceModule,
-    forwardRef(() => SummaryModule),
-  ],
+  imports: [ConfigModule, HttpModule, forwardRef(() => SummaryModule)],
   controllers: [SlackController],
   providers: [OutputChannelService, FileSystemChannel, SlackChannel],
   exports: [OutputChannelService],
