@@ -1,1 +1,4 @@
-export type ChannelType = 'file' | 'db' | 'slack';
+export enum ChannelType {
+  FILE = 'file',
+  SLACK = 'slack',
+}
