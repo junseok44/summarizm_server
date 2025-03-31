@@ -1,7 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Anthropic from '@anthropic-ai/sdk';
-import { IAIAgent } from '../interfaces/ai-agent.interface';
+import { IAIAgent } from 'src/summary-processor/interfaces/ai-agent.interface';
+import { SummaryMode } from 'src/summary-processor/types/summary-mode.type';
+import { MODE_CONFIG_CLAUDE } from './claude-mode.config';
 
 @Injectable()
 export class ClaudeAgentService implements IAIAgent {
@@ -15,15 +17,23 @@ export class ClaudeAgentService implements IAIAgent {
     });
   }
 
+  getModelConfig() {
+    return MODE_CONFIG_CLAUDE;
+  }
+
   getName(): string {
     return 'Claude';
   }
 
-  async request(systemPrompt: string, userPrompt: string): Promise<string> {
+  async request(
+    systemPrompt: string,
+    userPrompt: string,
+    mode: SummaryMode,
+  ): Promise<string> {
     try {
       const response = await this.anthropic.messages.create({
-        model: 'claude-3-5-haiku-20241022',
-        max_tokens: 8000,
+        model: this.getModelConfig()[mode].model,
+        max_tokens: this.getModelConfig()[mode].maxTokens,
         temperature: 0,
         system: systemPrompt,
         messages: [
@@ -53,7 +63,7 @@ export class ClaudeAgentService implements IAIAgent {
         );
       }
 
-      throw new Error('AI 요청 중 오류가 발생했습니다.');
+      throw new Error('AI 요청 중 오류가 발생했습니다.' + error.message);
     }
   }
 }

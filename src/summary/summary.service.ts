@@ -16,13 +16,16 @@ export class SummaryService {
   ) {}
 
   async create(createSummaryDto: CreateSummaryDto) {
-    const { url, outputChannels } = createSummaryDto;
+    const { url, outputChannels, mode } = createSummaryDto;
 
     const videoData = await this.youtubeService.getVideoData(url);
 
     const summary = await this.summaryProcessorService.process(
       videoData.transcript,
-      { title: videoData.title },
+      {
+        type: 'claude',
+        mode,
+      },
     );
 
     const content: SummaryContent = {
@@ -44,7 +47,6 @@ export class SummaryService {
         ),
       ).catch((error) => {
         this.logger.error('채널 전송 중 오류:', error);
-        // 에러 처리 로직
       });
     }
 

@@ -12,6 +12,7 @@ import {
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ChannelType } from 'src/output-channel/types/channel-type';
+import { SummaryMode } from 'src/summary-processor/types/summary-mode.type';
 
 // Custom decorator for channel config validation
 export function IsValidChannelConfig(validationOptions?: ValidationOptions) {
@@ -88,6 +89,10 @@ export class CreateSummaryDto {
   @IsUrl()
   @IsNotEmpty()
   url: string;
+
+  @IsEnum(SummaryMode)
+  @IsOptional()
+  mode?: SummaryMode = SummaryMode.FAST;
 
   @IsOptional()
   @IsArray()

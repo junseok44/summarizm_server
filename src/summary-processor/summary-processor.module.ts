@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { SummaryProcessorService } from './summary-processor.service';
-import { ClaudeAgentService } from './services/claude.service';
+import { ClaudeAgentService } from './agents/claude/claude.service';
 import { HttpModule } from '@nestjs/axios';
 import { ConfigModule } from '@nestjs/config';
 

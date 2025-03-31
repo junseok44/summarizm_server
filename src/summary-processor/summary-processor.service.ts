@@ -1,9 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { IAIAgent } from './interfaces/ai-agent.interface';
-import { ClaudeAgentService } from './services/claude.service';
 import { Caption } from 'src/video-source/interfaces/caption.interface';
 import { AgentType } from './types/agent-type';
 import { SummaryResult } from './interfaces/summary-result.interface';
+import { ClaudeAgentService } from './agents/claude/claude.service';
+import { SummaryMode } from './types/summary-mode.type';
 
 @Injectable()
 export class SummaryProcessorService {
@@ -20,21 +21,27 @@ export class SummaryProcessorService {
 
   async process(
     captions: Caption[],
-    videoInfo: { title: string },
-    agentType: AgentType = 'claude',
+    agentConfig: {
+      type: AgentType;
+      mode: SummaryMode;
+    },
   ): Promise<SummaryResult> {
     try {
-      const agent = this.agents.get(agentType);
+      const agent = this.agents.get(agentConfig.type);
 
       if (!agent) {
-        throw new Error(`지원하지 않는 AI 에이전트입니다: ${agentType}`);
+        throw new Error(`지원하지 않는 AI 에이전트입니다: ${agentConfig.type}`);
       }
 
       // 프롬프트 생성
       const prompt = this.createSummaryPrompt();
 
       // AI 에이전트에 요청
-      const response = await agent.request(prompt, JSON.stringify(captions));
+      const response = await agent.request(
+        prompt,
+        JSON.stringify(captions),
+        agentConfig.mode,
+      );
 
       // 응답 파싱
       const data = this.parseResponse(response);
