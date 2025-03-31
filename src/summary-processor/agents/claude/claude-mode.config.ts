@@ -15,7 +15,7 @@ export const MODE_CONFIG_CLAUDE: Record<SummaryMode, SummaryModeData> = {
   },
   [SummaryMode.DETAILED]: {
     model: 'claude-3-opus-20240229',
-    maxTokens: 8000,
+    maxTokens: 4096,
     description: '상세 요약 (5분 이내)',
     emoji: '🔍',
   },
