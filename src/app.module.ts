@@ -6,10 +6,12 @@ import { ConfigModule } from '@nestjs/config';
 import * as Joi from 'joi';
 import { APP_FILTER } from '@nestjs/core';
 import { AllExceptionsFilter } from './common/filter/all-exceptions.filter';
+import { BotModule } from './bot/bot.module';
 
 @Module({
   imports: [
     SummaryModule,
+    BotModule,
     ConfigModule.forRoot({
       isGlobal: true,
       validationSchema: Joi.object({
