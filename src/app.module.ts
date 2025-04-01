@@ -1,12 +1,10 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
-import { SummaryModule } from './summary/summary.module';
 import { ConfigModule } from '@nestjs/config';
-import * as Joi from 'joi';
 import { APP_FILTER } from '@nestjs/core';
-import { AllExceptionsFilter } from './common/filter/all-exceptions.filter';
+import * as Joi from 'joi';
 import { BotModule } from './bot/bot.module';
+import { AllExceptionsFilter } from './common/filter/all-exceptions.filter';
+import { SummaryModule } from './summary/summary.module';
 
 @Module({
   imports: [
@@ -21,9 +19,7 @@ import { BotModule } from './bot/bot.module';
       }),
     }),
   ],
-  controllers: [AppController],
   providers: [
-    AppService,
     {
       provide: APP_FILTER,
       useClass: AllExceptionsFilter,

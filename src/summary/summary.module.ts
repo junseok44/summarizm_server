@@ -8,7 +8,6 @@ import { SummaryService } from './summary.service';
 @Module({
   imports: [
     VideoSourceModule,
-    OutputChannelModule,
     SummaryProcessorModule,
     forwardRef(() => OutputChannelModule),
   ],
